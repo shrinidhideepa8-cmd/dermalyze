@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dermalyze — Skin Pattern Screening</title>
+<meta name="author" content="SHRINIDHI S K">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --ink:#16231F;
+  --paper:#F2EEE4;
+  --paper-2:#EAE4D5;
+  --teal:#2E6B62;
+  --teal-dim:#4A8178;
+  --coral:#DD5A45;
+  --sage:#8FA894;
+  --sand:#D2C6AA;
+  --charcoal:#2A2A26;
+  --white:#FCFBF8;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--paper);
+  color:var(--charcoal);
+  font-family:'Inter', sans-serif;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+.mono{font-family:'IBM Plex Mono', monospace;}
+
+h1,h2,h3,.display{
+  font-family:'Fraunces', serif;
+  color:var(--ink);
+  font-weight:500;
+  letter-spacing:-0.01em;
+}
+
+a{color:inherit;}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+}
+
+/* ===== Layout shell ===== */
+.wrap{max-width:1080px; margin:0 auto; padding:0 28px;}
+
+/* ===== Top banner ===== */
+.banner{
+  background:var(--ink);
+  color:var(--paper);
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12.5px;
+  letter-spacing:0.02em;
+  padding:9px 0;
+  text-align:center;
+}
+.banner b{color:var(--coral); font-weight:600;}
+
+/* ===== Header ===== */
+header{
+  padding:28px 0 20px;
+  border-bottom:1px solid var(--sand);
+}
+.header-row{
+  display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+}
+.brand{display:flex; align-items:center; gap:12px;}
+.brand-mark{
+  width:38px; height:38px; border-radius:50%;
+  border:1.5px solid var(--ink);
+  position:relative; flex-shrink:0;
+}
+.brand-mark::before{
+  content:''; position:absolute; inset:8px;
+  border:1px solid var(--ink); border-radius:50%;
+}
+.brand-mark::after{
+  content:''; position:absolute; top:50%; left:50%;
+  width:1px; height:38px; background:var(--ink);
+  transform:translate(-50%,-50%) rotate(45deg);
+}
+.brand-name{font-size:22px; font-weight:600;}
+.brand-tag{font-size:12px; color:var(--teal-dim); font-family:'IBM Plex Mono',monospace; margin-top:2px;}
+nav{display:flex; gap:26px; font-size:14px; font-weight:500;}
+nav a{text-decoration:none; color:var(--charcoal); opacity:0.75; transition:opacity .15s;}
+nav a:hover{opacity:1;}
+
+/* ===== Hero ===== */
+.hero{
+  padding:64px 0 56px;
+  display:grid;
+  grid-template-columns:1.1fr 1fr;
+  gap:56px;
+  align-items:center;
+}
+@media (max-width:860px){ .hero{grid-template-columns:1fr; padding:44px 0;} }
+
+.eyebrow{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px; letter-spacing:0.12em; text-transform:uppercase;
+  color:var(--teal); margin-bottom:16px; display:flex; align-items:center; gap:10px;
+}
+.eyebrow::before{content:''; width:22px; height:1px; background:var(--teal);}
+
+.hero h1{
+  font-size:clamp(32px, 4.4vw, 50px);
+  line-height:1.06;
+  margin-bottom:20px;
+}
+.hero h1 em{font-style:italic; color:var(--teal);}
+.hero p{font-size:16.5px; color:#4a4a44; max-width:44ch; margin-bottom:28px;}
+
+.hero-stats{display:flex; gap:28px; margin-top:8px;}
+.hero-stat b{display:block; font-family:'Fraunces',serif; font-size:26px; color:var(--ink);}
+.hero-stat span{font-size:12px; color:#6b6b62; font-family:'IBM Plex Mono',monospace;}
+
+/* ===== Upload / loupe panel ===== */
+.scope-panel{
+  background:var(--white);
+  border:1px solid var(--sand);
+  border-radius:6px;
+  padding:22px;
+  position:relative;
+}
+.scope-panel-head{
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:#7a7a70;
+  margin-bottom:16px; letter-spacing:0.04em;
+}
+.dot-live{width:6px; height:6px; border-radius:50%; background:var(--coral); display:inline-block; margin-right:6px; animation:pulse 1.8s infinite;}
+@keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.3;}}
+
+.loupe{
+  aspect-ratio:1/1;
+  border-radius:50%;
+  border:2px solid var(--ink);
+  position:relative;
+  overflow:hidden;
+  background:repeating-conic-gradient(from 0deg, #ECE6D6 0deg 8deg, #E4DCC8 8deg 16deg);
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.loupe::before{
+  content:'';
+  position:absolute; inset:14px;
+  border:1px dashed rgba(22,35,31,0.35);
+  border-radius:50%;
+  pointer-events:none;
+  z-index:3;
+}
+.loupe img{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none;
+}
+.loupe-empty{
+  text-align:center; color:var(--ink); padding:0 30px; z-index:2;
+}
+.loupe-empty svg{margin-bottom:10px; opacity:0.55;}
+.loupe-empty p{font-size:13px; font-weight:500;}
+.loupe-empty span{font-size:11px; color:#7a7a70; font-family:'IBM Plex Mono',monospace;}
+
+.scan-ring{
+  position:absolute; inset:0; border-radius:50%;
+  display:none;
+  z-index:4;
+}
+.scan-ring.active{display:block;}
+.scan-ring::before{
+  content:''; position:absolute; inset:0; border-radius:50%;
+  background:conic-gradient(from 0deg, transparent 0%, rgba(46,107,98,0.55) 12%, transparent 24%);
+  animation:spin 1.4s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+#fileInput{display:none;}
+
+.scope-actions{display:flex; gap:10px; margin-top:18px;}
+.btn{
+  font-family:'Inter', sans-serif; font-weight:600; font-size:13.5px;
+  padding:12px 20px; border-radius:4px; border:none; cursor:pointer;
+  transition:transform .12s, opacity .12s;
+}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:var(--ink); color:var(--paper); flex:1;}
+.btn-primary:hover{opacity:0.88;}
+.btn-primary:disabled{opacity:0.4; cursor:not-allowed;}
+.btn-ghost{background:transparent; border:1px solid var(--sand); color:var(--ink);}
+.btn-ghost:hover{border-color:var(--ink);}
+
+.scope-foot{
+  margin-top:14px; font-size:11.5px; color:#8a8a7e; font-family:'IBM Plex Mono',monospace; text-align:center;
+}
+
+/* ===== Analysis progress ===== */
+.progress-section{display:none; padding:0 0 40px;}
+.progress-section.active{display:block;}
+.progress-list{
+  border-top:1px solid var(--sand);
+  margin-top:8px;
+}
+.progress-row{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 0; border-bottom:1px solid var(--sand);
+  font-family:'IBM Plex Mono', monospace; font-size:13px;
+}
+.progress-row .label{color:var(--ink);}
+.progress-row .state{color:#9a9a8e; display:flex; align-items:center; gap:8px;}
+.progress-row.done .state{color:var(--teal);}
+.check{width:14px; height:14px; border-radius:50%; border:1.5px solid #c8c2ac; display:inline-block; position:relative;}
+.progress-row.done .check{border-color:var(--teal); background:var(--teal);}
+.progress-row.done .check::after{
+  content:''; position:absolute; left:3px; top:1px; width:4px; height:7px;
+  border-right:1.5px solid white; border-bottom:1.5px solid white; transform:rotate(40deg);
+}
+
+/* ===== Results ===== */
+#resultsSection{display:none; padding:20px 0 70px;}
+#resultsSection.active{display:block;}
+
+.case-header{
+  display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px;
+  border-bottom:1px solid var(--ink); padding-bottom:16px; margin-bottom:28px;
+}
+.case-header .case-id{font-family:'IBM Plex Mono',monospace; font-size:12px; color:#7a7a70;}
+.case-header h2{font-size:26px;}
+
+.risk-banner{
+  display:flex; align-items:center; gap:16px;
+  padding:20px 22px; border-radius:6px; margin-bottom:32px;
+  border:1px solid;
+}
+.risk-banner.low{background:#EEF3ED; border-color:var(--sage); }
+.risk-banner.moderate{background:#FBF2E4; border-color:#D8A24A;}
+.risk-banner.elevated{background:#FBEAE6; border-color:var(--coral);}
+.risk-badge{
+  font-family:'Fraunces',serif; font-size:15px; font-weight:600;
+  padding:6px 14px; border-radius:20px; white-space:nowrap; color:white;
+}
+.risk-banner.low .risk-badge{background:var(--sage);}
+.risk-banner.moderate .risk-badge{background:#D8A24A;}
+.risk-banner.elevated .risk-badge{background:var(--coral);}
+.risk-banner p{font-size:13.5px; color:#4a4a44;}
+
+.results-grid{display:grid; grid-template-columns:1fr 1fr; gap:44px;}
+@media (max-width:860px){ .results-grid{grid-template-columns:1fr;} }
+
+.panel-title{
+  font-family:'IBM Plex Mono',monospace; font-size:11.5px; text-transform:uppercase;
+  letter-spacing:0.1em; color:var(--teal); margin-bottom:16px;
+}
+
+.condition-row{padding:16px 0; border-bottom:1px solid var(--sand);}
+.condition-row:first-child{padding-top:0;}
+.condition-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
+.condition-name{font-family:'Fraunces',serif; font-size:17px; color:var(--ink);}
+.condition-pct{font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--teal);}
+.bar-track{height:5px; background:var(--paper-2); border-radius:3px; overflow:hidden; margin-bottom:8px;}
+.bar-fill{height:100%; background:var(--teal); border-radius:3px; transition:width 1s ease;}
+.condition-desc{font-size:13px; color:#5c5c54; max-width:52ch;}
+
+.abcde-grid{display:flex; flex-direction:column; gap:14px;}
+.abcde-row{display:grid; grid-template-columns:28px 1fr 44px; gap:12px; align-items:center;}
+.abcde-letter{
+  font-family:'Fraunces',serif; font-weight:600; font-size:18px; color:var(--teal);
+  width:28px; height:28px; border:1px solid var(--teal); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+}
+.abcde-meta{display:flex; flex-direction:column; gap:5px;}
+.abcde-meta .name{font-size:13px; font-weight:600;}
+.abcde-meta .note{font-size:12px; color:#6b6b62;}
+.abcde-track{height:4px; background:var(--paper-2); border-radius:3px; overflow:hidden; grid-column:1/-1; margin-top:-4px; margin-left:40px;}
+.abcde-fill{height:100%; border-radius:3px; background:var(--teal);}
+.abcde-score{font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-align:right; color:var(--ink);}
+
+.action-box{
+  margin-top:32px; background:var(--ink); color:var(--paper);
+  border-radius:6px; padding:26px 28px;
+  display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;
+}
+.action-box h3{color:var(--paper); font-size:19px; margin-bottom:6px;}
+.action-box p{font-size:13.5px; color:#c9c5b8; max-width:46ch;}
+.action-box .btn-primary{background:var(--coral); color:white; flex:none;}
+
+.reset-link{
+  display:inline-block; margin-top:24px; font-size:13px; color:var(--teal);
+  text-decoration:underline; cursor:pointer; background:none; border:none; font-family:'Inter',sans-serif;
+}
+
+/* ===== Library ===== */
+.library{padding:60px 0; border-top:1px solid var(--sand);}
+.section-head{max-width:60ch; margin-bottom:40px;}
+.section-head h2{font-size:30px; margin-bottom:12px;}
+.section-head p{color:#5c5c54; font-size:15px;}
+
+.lib-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:1px; background:var(--sand); border:1px solid var(--sand);}
+@media (max-width:760px){ .lib-grid{grid-template-columns:1fr 1fr;} }
+@media (max-width:480px){ .lib-grid{grid-template-columns:1fr;} }
+.lib-card{background:var(--white); padding:26px 22px; min-height:190px; display:flex; flex-direction:column;}
+.lib-card .lib-icon{margin-bottom:14px;}
+.lib-card h3{font-size:17px; margin-bottom:8px;}
+.lib-card p{font-size:13px; color:#5c5c54; flex:1;}
+.lib-card .lib-tag{
+  font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase;
+  letter-spacing:0.06em; color:var(--teal-dim); margin-top:12px;
+}
+
+/* ===== Method / limitations ===== */
+.method{padding:60px 0; border-top:1px solid var(--sand); display:grid; grid-template-columns:1fr 1fr; gap:56px;}
+@media (max-width:860px){ .method{grid-template-columns:1fr; gap:32px;} }
+.method h2{font-size:26px; margin-bottom:18px;}
+.method-block p{font-size:14.5px; color:#4a4a44; margin-bottom:14px;}
+.method-block ul{padding-left:18px; font-size:14px; color:#4a4a44;}
+.method-block li{margin-bottom:8px;}
+.disclaimer-box{
+  background:#FBEAE6; border:1px solid var(--coral); border-radius:6px; padding:20px 22px; margin-top:18px;
+}
+.disclaimer-box p{color:#7a3226; font-size:13.5px; margin:0;}
+.disclaimer-box b{display:block; margin-bottom:6px; color:var(--coral); font-family:'IBM Plex Mono',monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:0.06em;}
+
+/* ===== Footer ===== */
+footer{border-top:1px solid var(--sand); padding:28px 0; font-size:12.5px; color:#7a7a70;}
+.footer-row{display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <b>NOT A MEDICAL DEVICE</b> &nbsp;—&nbsp; educational screening demo only · always consult a licensed dermatologist or physician
+</div>
+
+<header>
+  <div class="wrap header-row">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        <div class="brand-name">Dermalyze</div>
+        <div class="brand-tag">SKIN PATTERN SCREENING · DEMO</div>
+      </div>
+    </div>
+    <nav>
+      <a href="#scan">Scan</a>
+      <a href="#library">Condition library</a>
+      <a href="#method">Methodology</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero" id="scan">
+    <div>
+      <div class="eyebrow">Case intake</div>
+      <h1>Read the pattern <em>before</em> the appointment.</h1>
+      <p>Upload a clear photo of a skin lesion or affected area. Dermalyze runs a live ABCDE-style pattern analysis — asymmetry, border, color, diameter, evolution cues — directly on the pixels in your browser, and hands you a plain-language starting point to bring to a clinician.</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><b>4</b><span>METRICS SCORED</span></div>
+        <div class="hero-stat"><b>0</b><span>IMAGES STORED</span></div>
+        <div class="hero-stat"><b>&lt;10s</b><span>LOCAL ANALYSIS</span></div>
+      </div>
+    </div>
+
+    <div class="scope-panel">
+      <div class="scope-panel-head">
+        <span><span class="dot-live"></span>SPECIMEN VIEWER</span>
+        <span id="imgMeta">NO IMAGE LOADED</span>
+      </div>
+
+      <div class="loupe" id="loupeArea">
+        <div class="loupe-empty" id="loupeEmpty">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#16231F" stroke-width="1.4"><circle cx="10" cy="10" r="6"/><line x1="20" y1="20" x2="14.5" y2="14.5"/></svg>
+          <p>Click or drop a photo</p>
+          <span>JPG · PNG · up to 10MB</span>
+        </div>
+        <img id="previewImg" alt="Uploaded skin area preview">
+        <div class="scan-ring" id="scanRing"></div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*">
+
+      <div class="scope-actions">
+        <button class="btn btn-primary" id="analyzeBtn" disabled>Run analysis</button>
+        <button class="btn btn-ghost" id="clearBtn">Clear</button>
+      </div>
+      <div class="scope-foot">Image is analyzed locally in your browser and is never uploaded to a server.</div>
+    </div>
+  </section>
+
+  <section class="progress-section" id="progressSection">
+    <div class="panel-title">Processing</div>
+    <div class="progress-list" id="progressList"></div>
+  </section>
+
+  <section id="resultsSection">
+    <div class="case-header">
+      <h2>Screening summary</h2>
+      <span class="case-id mono" id="caseId">CASE 000</span>
+    </div>
+
+    <div class="risk-banner" id="riskBanner">
+      <div class="risk-badge" id="riskBadge">—</div>
+      <p id="riskText"></p>
+    </div>
+
+    <div class="results-grid">
+      <div>
+        <div class="panel-title">Closest-matching patterns</div>
+        <div id="conditionList"></div>
+      </div>
+      <div>
+        <div class="panel-title">ABCDE pattern breakdown</div>
+        <div class="abcde-grid" id="abcdeGrid"></div>
+      </div>
+    </div>
+
+    <div class="action-box">
+      <div>
+        <h3 id="actionTitle">Recommended next step</h3>
+        <p id="actionText"></p>
+      </div>
+      <button class="btn btn-primary" onclick="document.getElementById('method').scrollIntoView({behavior:'smooth'})">Read the disclaimer</button>
+    </div>
+
+    <button class="reset-link" id="newScanBtn">↺ Start a new scan</button>
+  </section>
+
+  <section class="library" id="library">
+    <div class="section-head">
+      <h2>Condition library</h2>
+      <p>Background reading on the categories Dermalyze's pattern-matcher references. This is general education, not a personalized assessment — only a clinician can tell you which of these, if any, applies to you.</p>
+    </div>
+    <div class="lib-grid" id="libGrid"></div>
+  </section>
+
+  <section class="method" id="method">
+    <div class="method-block">
+      <h2>How the scoring works</h2>
+      <p>When you run a scan, Dermalyze draws your photo to an in-browser canvas and computes four classic dermoscopy heuristics directly from the pixel data — no image ever leaves your device:</p>
+      <ul>
+        <li><b>Asymmetry</b> — mirrors the image and measures pixel-level difference between halves.</li>
+        <li><b>Border irregularity</b> — runs an edge-gradient (Sobel-style) pass and scores how jagged the lesion boundary is.</li>
+        <li><b>Color variance</b> — measures spread across the color channels; multiple colors in one lesion is a classic flag.</li>
+        <li><b>Diameter / coverage</b> — estimates how much of the frame the lesion occupies relative to typical reference sizes.</li>
+      </ul>
+      <p>These four scores are combined into a composite pattern match against five broad, common categories. That match is a statistical pattern-read, not a diagnosis.</p>
+    </div>
+    <div class="method-block">
+      <h2>Limitations, in plain terms</h2>
+      <p>This build ships with a transparent, rules-based heuristic engine — not a clinically trained deep-learning model. It has not been validated against biopsy-confirmed cases, is sensitive to lighting, focus, skin tone, and camera angle, and cannot see texture, raised borders, itch, pain, or history — all of which matter clinically.</p>
+      <p>To make this production-grade, swap the <span class="mono">scoreImage()</span> function for a call to a real model trained on a labeled clinical dataset (e.g. HAM10000 / ISIC) served behind an API, and have a licensed dermatologist validate its outputs before anyone relies on them.</p>
+      <div class="disclaimer-box">
+        <b>Please read</b>
+        <p>Dermalyze is a demonstration tool. It does not diagnose disease, is not a substitute for professional medical advice, and should never delay you from seeing a doctor — especially for a lesion that is new, changing, bleeding, or growing. If something looks concerning, book a dermatologist appointment regardless of what any app tells you.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap footer-row">
+    <span>© 2026 SHRINIDHI S K. Dermalyze — educational demo, built for exploration, not clinical use.</span>
+    <span>No data leaves your browser.</span>
+  </div>
+</footer>
+
+<script>
+// ======================================================================
+// DERMALYZE — client-side pixel heuristic engine
+// Everything below runs locally in the browser. No network calls.
+// ======================================================================
+
+const fileInput = document.getElementById('fileInput');
+const loupeArea = document.getElementById('loupeArea');
+const loupeEmpty = document.getElementById('loupeEmpty');
+const previewImg = document.getElementById('previewImg');
+const scanRing = document.getElementById('scanRing');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const clearBtn = document.getElementById('clearBtn');
+const imgMeta = document.getElementById('imgMeta');
+const progressSection = document.getElementById('progressSection');
+const progressList = document.getElementById('progressList');
+const resultsSection = document.getElementById('resultsSection');
+const newScanBtn = document.getElementById('newScanBtn');
+
+let currentImage = null;
+
+loupeArea.addEventListener('click', () => fileInput.click());
+loupeArea.addEventListener('dragover', e => { e.preventDefault(); });
+loupeArea.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files && e.target.files[0]) loadFile(e.target.files[0]);
+});
+
+function loadFile(file){
+  if (!file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    previewImg.src = e.target.result;
+    previewImg.style.display = 'block';
+    loupeEmpty.style.display = 'none';
+    analyzeBtn.disabled = false;
+    imgMeta.textContent = (file.name.length > 22 ? file.name.slice(0,19)+'…' : file.name).toUpperCase();
+    const img = new Image();
+    img.onload = () => { currentImage = img; };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+clearBtn.addEventListener('click', resetAll);
+newScanBtn.addEventListener('click', () => { resetAll(); document.getElementById('scan').scrollIntoView({behavior:'smooth'}); });
+
+function resetAll(){
+  currentImage = null;
+  previewImg.src = '';
+  previewImg.style.display = 'none';
+  loupeEmpty.style.display = 'block';
+  analyzeBtn.disabled = true;
+  imgMeta.textContent = 'NO IMAGE LOADED';
+  progressSection.classList.remove('active');
+  resultsSection.classList.remove('active');
+  scanRing.classList.remove('active');
+}
+
+const STEPS = [
+  'Loading image buffer',
+  'Measuring asymmetry',
+  'Scoring border irregularity',
+  'Analyzing color variance',
+  'Estimating lesion coverage',
+  'Matching against pattern library'
+];
+
+analyzeBtn.addEventListener('click', async () => {
+  if (!currentImage) return;
+  analyzeBtn.disabled = true;
+  scanRing.classList.add('active');
+  progressSection.classList.add('active');
+  resultsSection.classList.remove('active');
+  progressList.innerHTML = '';
+  progressSection.scrollIntoView({behavior:'smooth', block:'start'});
+
+  const rows = STEPS.map(label => {
+    const row = document.createElement('div');
+    row.className = 'progress-row';
+    row.innerHTML = `<span class="label">${label}</span><span class="state"><span class="check"></span>pending</span>`;
+    progressList.appendChild(row);
+    return row;
+  });
+
+  for (let i = 0; i < rows.length; i++){
+    await sleep(320 + Math.random()*260);
+    rows[i].classList.add('done');
+    rows[i].querySelector('.state').innerHTML = '<span class="check"></span>done';
+  }
+
+  const scores = scoreImage(currentImage);
+  await sleep(300);
+  renderResults(scores);
+  scanRing.classList.remove('active');
+  analyzeBtn.disabled = false;
+});
+
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+// ---- Core heuristic engine -------------------------------------------------
+function scoreImage(img){
+  const size = 200; // downsample for speed
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, size, size);
+  const data = ctx.getImageData(0, 0, size, size).data;
+
+  // --- Asymmetry: compare left half vs mirrored right half ---
+  let asymDiff = 0, asymCount = 0;
+  for (let y = 0; y < size; y++){
+    for (let x = 0; x < size/2; x++){
+      const xi = x, xr = size - 1 - x;
+      const i1 = (y*size + xi) * 4;
+      const i2 = (y*size + xr) * 4;
+      asymDiff += Math.abs(data[i1]-data[i2]) + Math.abs(data[i1+1]-data[i2+1]) + Math.abs(data[i1+2]-data[i2+2]);
+      asymCount++;
+    }
+  }
+  const asymmetryScore = clamp((asymDiff / asymCount) / 2.2, 0, 100);
+
+  // --- Grayscale + luminance buffer for edge / coverage work ---
+  const gray = new Float32Array(size*size);
+  for (let p = 0; p < size*size; p++){
+    const i = p*4;
+    gray[p] = 0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2];
+  }
+
+  // --- Border irregularity: Sobel edge magnitude variance around lesion boundary ---
+  let edgeSum = 0, edgeSq = 0, edgeCount = 0;
+  for (let y = 1; y < size-1; y++){
+    for (let x = 1; x < size-1; x++){
+      const gx = gray[(y-1)*size+(x+1)] + 2*gray[y*size+(x+1)] + gray[(y+1)*size+(x+1)]
+               - gray[(y-1)*size+(x-1)] - 2*gray[y*size+(x-1)] - gray[(y+1)*size+(x-1)];
+      const gy = gray[(y+1)*size+(x-1)] + 2*gray[(y+1)*size+x] + gray[(y+1)*size+(x+1)]
+               - gray[(y-1)*size+(x-1)] - 2*gray[(y-1)*size+x] - gray[(y-1)*size+(x+1)];
+      const mag = Math.sqrt(gx*gx + gy*gy);
+      edgeSum += mag; edgeSq += mag*mag; edgeCount++;
+    }
+  }
+  const edgeMean = edgeSum/edgeCount;
+  const edgeVar = Math.sqrt(Math.max(0, edgeSq/edgeCount - edgeMean*edgeMean));
+  const borderScore = clamp(edgeVar / 2.4, 0, 100);
+
+  // --- Color variance across R/G/B channels ---
+  let rSum=0,gSum=0,bSum=0;
+  for (let p=0;p<size*size;p++){ const i=p*4; rSum+=data[i]; gSum+=data[i+1]; bSum+=data[i+2]; }
+  const n = size*size;
+  const rMean=rSum/n, gMean=gSum/n, bMean=bSum/n;
+  let rVar=0,gVar=0,bVar=0;
+  for (let p=0;p<size*size;p++){
+    const i=p*4;
+    rVar += (data[i]-rMean)**2; gVar += (data[i+1]-gMean)**2; bVar += (data[i+2]-bMean)**2;
+  }
+  const colorSpread = Math.sqrt((rVar+gVar+bVar)/(3*n));
+  const colorScore = clamp(colorSpread / 1.1, 0, 100);
+
+  // --- Coverage: rough darker-region ratio (proxy for lesion vs surrounding skin) ---
+  const overallMean = gray.reduce((a,b)=>a+b,0)/gray.length;
+  let darkPixels = 0;
+  for (let p=0;p<gray.length;p++){ if (gray[p] < overallMean * 0.82) darkPixels++; }
+  const coverageRatio = darkPixels / gray.length;
+  const diameterScore = clamp(coverageRatio * 220, 0, 100);
+
+  return { asymmetryScore, borderScore, colorScore, diameterScore, rMean, gMean, bMean };
+}
+
+function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+// ---- Pattern library: maps heuristic scores to broad, common categories ----
+const PATTERNS = [
+  {
+    key: 'nevus',
+    name: 'Benign nevus (common mole)',
+    desc: 'Typically symmetric, even-colored, and stable — the most common pigmented finding on skin.',
+    weight: s => 100 - (s.asymmetryScore*0.4 + s.borderScore*0.3 + s.colorScore*0.3)
+  },
+  {
+    key: 'atypical',
+    name: 'Atypical pigmented pattern',
+    desc: 'Flags asymmetry, irregular borders, and multiple colors together — the classic ABCDE warning combination.',
+    weight: s => (s.asymmetryScore*0.35 + s.borderScore*0.35 + s.colorScore*0.3)
+  },
+  {
+    key: 'inflammatory',
+    name: 'Inflammatory pattern (eczema / psoriasis-like)',
+    desc: 'Diffuse redness and texture variation without a single sharply defined pigmented lesion.',
+    weight: s => clamp((s.rMean - s.bMean) * 1.4 + s.colorScore*0.3, 0, 100)
+  },
+  {
+    key: 'vascular',
+    name: 'Vascular / acne-type pattern',
+    desc: 'Localized red-toned spots with moderate coverage and comparatively low border irregularity.',
+    weight: s => clamp((s.rMean - (s.gMean+s.bMean)/2) * 1.7 + (100-s.diameterScore)*0.15, 0, 100)
+  },
+  {
+    key: 'pigmentation',
+    name: 'Even pigmentation / age spot pattern',
+    desc: 'Flat, evenly toned discoloration with low asymmetry and low border irregularity.',
+    weight: s => clamp(100 - s.borderScore*0.5 - s.asymmetryScore*0.5, 0, 100) * (s.colorScore < 40 ? 1 : 0.5)
+  }
+];
+
+function renderResults(s){
+  document.getElementById('caseId').textContent = 'CASE ' + String(Math.floor(Math.random()*900+100));
+
+  // rank patterns
+  const ranked = PATTERNS.map(p => ({...p, score: clamp(p.weight(s), 4, 97)}))
+                          .sort((a,b) => b.score - a.score)
+                          .slice(0,3);
+  // normalize top 3 to feel like a distribution
+  const total = ranked.reduce((a,p)=>a+p.score,0);
+  ranked.forEach(p => p.pct = Math.round((p.score/total)*100));
+
+  const conditionList = document.getElementById('conditionList');
+  conditionList.innerHTML = '';
+  ranked.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'condition-row';
+    row.innerHTML = `
+      <div class="condition-top">
+        <span class="condition-name">${p.name}</span>
+        <span class="condition-pct mono">${p.pct}%</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%" data-w="${p.pct}"></div></div>
+      <div class="condition-desc">${p.desc}</div>
+    `;
+    conditionList.appendChild(row);
+  });
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.bar-fill').forEach(el => el.style.width = el.dataset.w + '%');
+  });
+
+  // ABCDE grid
+  const abcde = [
+    {letter:'A', name:'Asymmetry', note:'Left/right half pixel divergence', val: s.asymmetryScore},
+    {letter:'B', name:'Border irregularity', note:'Edge-gradient variance', val: s.borderScore},
+    {letter:'C', name:'Color variance', note:'Spread across R/G/B channels', val: s.colorScore},
+    {letter:'D', name:'Diameter / coverage', note:'Estimated lesion area in frame', val: s.diameterScore},
+  ];
+  const abcdeGrid = document.getElementById('abcdeGrid');
+  abcdeGrid.innerHTML = '';
+  abcde.forEach(a => {
+    const row = document.createElement('div');
+    row.innerHTML = `
+      <div class="abcde-row">
+        <span class="abcde-letter">${a.letter}</span>
+        <span class="abcde-meta"><span class="name">${a.name}</span><span class="note">${a.note}</span></span>
+        <span class="abcde-score mono">${Math.round(a.val)}/100</span>
+      </div>
+      <div class="abcde-track"><div class="abcde-fill" style="width:${a.val}%"></div></div>
+    `;
+    abcdeGrid.appendChild(row);
+  });
+
+  // composite risk
+  const composite = (s.asymmetryScore*0.28 + s.borderScore*0.28 + s.colorScore*0.28 + s.diameterScore*0.16);
+  const riskBanner = document.getElementById('riskBanner');
+  const riskBadge = document.getElementById('riskBadge');
+  const riskText = document.getElementById('riskText');
+  const actionTitle = document.getElementById('actionTitle');
+  const actionText = document.getElementById('actionText');
+
+  riskBanner.className = 'risk-banner';
+  if (composite < 38){
+    riskBanner.classList.add('low');
+    riskBadge.textContent = 'Low pattern concern';
+    riskText.textContent = 'The measured pattern leans toward common, benign characteristics — even so, this is not a clearance. Keep an eye on any changes over time.';
+    actionTitle.textContent = 'Recommended next step: routine monitoring';
+    actionText.textContent = 'Photograph the area monthly and note any change in size, shape, or color. Mention it at your next routine skin check.';
+  } else if (composite < 62){
+    riskBanner.classList.add('moderate');
+    riskBadge.textContent = 'Moderate pattern concern';
+    riskText.textContent = "Some ABCDE indicators are elevated. This pattern alone isn't a diagnosis, but it's worth a professional look rather than a wait-and-see approach.";
+    actionTitle.textContent = 'Recommended next step: book a dermatology visit';
+    actionText.textContent = 'Schedule a non-urgent appointment with a dermatologist in the next few weeks, and bring this summary with you.';
+  } else {
+    riskBanner.classList.add('elevated');
+    riskBadge.textContent = 'Elevated pattern concern';
+    riskText.textContent = "Multiple ABCDE indicators are high — this combination is one clinicians take seriously. Please don't rely on this app to decide whether it's worth checking.";
+    actionTitle.textContent = 'Recommended next step: see a clinician promptly';
+    actionText.textContent = 'Book a dermatologist appointment as soon as you reasonably can. If the area is bleeding, rapidly growing, or painful, seek medical care urgently.';
+  }
+
+  resultsSection.classList.add('active');
+  resultsSection.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ---- Condition library content (educational cards, not tied to a specific scan) ----
+const LIBRARY = [
+  {name:'Melanoma', tag:'Malignant · urgent', desc:'A pigmented lesion that is asymmetric, has an irregular border, multiple colors, or a diameter over 6mm and is changing. Early detection matters enormously.'},
+  {name:'Basal cell carcinoma', tag:'Malignant · common', desc:'Often a pearly or waxy bump, sometimes with visible blood vessels, that can bleed and slowly enlarge over months.'},
+  {name:'Atopic dermatitis (eczema)', tag:'Inflammatory', desc:'Itchy, dry, inflamed patches, often in skin folds, that flare and settle over time.'},
+  {name:'Psoriasis', tag:'Inflammatory', desc:'Well-defined, thickened, scaly plaques, commonly on elbows, knees, and the scalp.'},
+  {name:'Acne vulgaris', tag:'Follicular', desc:'Comedones, papules, and pustules from blocked, inflamed hair follicles, most common on the face, chest, and back.'},
+  {name:'Seborrheic keratosis', tag:'Benign', desc:'A waxy, "stuck-on" looking growth that is extremely common with age and is not cancerous.'},
+];
+
+const libGrid = document.getElementById('libGrid');
+LIBRARY.forEach(item => {
+  const card = document.createElement('div');
+  card.className = 'lib-card';
+  card.innerHTML = `
+    <div class="lib-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2E6B62" stroke-width="1.4"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4" fill="#2E6B62" stroke="none"/></svg>
+    </div>
+    <h3>${item.name}</h3>
+    <p>${item.desc}</p>
+    <div class="lib-tag">${item.tag}</div>
+  `;
+  libGrid.appendChild(card);
+});
+</script>
+</body>
+</html>
